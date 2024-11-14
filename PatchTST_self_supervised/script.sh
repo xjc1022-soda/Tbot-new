@@ -1,1 +1,0 @@
-python patchtst_finetune.py --is_finetune 1 --pretrained_model ./saved_models/etth1/masked_patchtst/based_model/patchtst_pretrained_cw512_patch12_stride12_epochs-pretrain10_mask0.4_model1.pth
