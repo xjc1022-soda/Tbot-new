@@ -61,6 +61,9 @@ class PatchTST(nn.Module):
         """
         z: tensor [bs x num_patch x n_vars x patch_len]
         """   
+        # print(z.shape)
+        # import ipdb
+        # ipdb.set_trace()
         z = self.backbone(z)                                                                # z: [bs x nvars x d_model x num_patch]
         z = self.head(z)                                                                    
         # z: [bs x target_dim x nvars] for prediction
@@ -221,7 +224,7 @@ class PatchTSTEncoder(nn.Module):
 
         u = torch.reshape(x, (bs*n_vars, num_patch, self.d_model) )              # u: [bs * nvars x num_patch x d_model]
         u = self.dropout(u + self.W_pos)                                         # u: [bs * nvars x num_patch x d_model]
-
+    
         # Encoder
         z = self.encoder(u)                                                      # z: [bs * nvars x num_patch x d_model]
         z = torch.reshape(z, (-1,n_vars, num_patch, self.d_model))               # z: [bs x nvars x num_patch x d_model]

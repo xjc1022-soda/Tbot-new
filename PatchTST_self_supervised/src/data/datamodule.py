@@ -13,7 +13,8 @@ class DataLoaders:
         workers: int=0,
         collate_fn=None,
         shuffle_train = True,
-        shuffle_val = False
+        shuffle_val = False,
+        drop_last = False
     ):
         super().__init__()
         self.datasetCls = datasetCls
@@ -25,10 +26,11 @@ class DataLoaders:
         self.workers = workers
         self.collate_fn = collate_fn
         self.shuffle_train, self.shuffle_val = shuffle_train, shuffle_val
-    
+        self.drop_last = drop_last 
         self.train = self.train_dataloader()
         self.valid = self.val_dataloader()
-        self.test = self.test_dataloader()        
+        self.test = self.test_dataloader()  
+     
  
         
     def train_dataloader(self):
@@ -49,6 +51,7 @@ class DataLoaders:
             batch_size=self.batch_size,
             num_workers=self.workers,
             collate_fn=self.collate_fn,
+            drop_last=self.drop_last
         )
 
     @classmethod

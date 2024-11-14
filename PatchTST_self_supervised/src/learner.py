@@ -16,7 +16,7 @@ from tqdm import tqdm
 
 import numpy as np
 
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator # type: ignore
 from unittest.mock import patch
 
 
@@ -133,7 +133,8 @@ class Learner(GetAttr):
     def all_batches(self, type_):
         # for self.num,self.batch in enumerate(progress_bar(dl, leave=False)):        
         for num, batch in enumerate(self.dl):            
-            self.iter, self.batch = num, batch            
+            self.iter, self.batch = num, batch   
+            # print(self.iter)         
             if type_ == 'train': self.batch_train()
             elif type_ == 'valid': self.batch_validate()
             elif type_ == 'predict': self.batch_predict()             
@@ -172,10 +173,12 @@ class Learner(GetAttr):
     def train_step(self, batch):
         # get the inputs
         self.xb, self.yb = batch
+        # print(self.xb.shape)
         # forward
         pred = self.model_forward()
         # compute loss
-        loss = self.loss_func(pred, self.yb)
+        # loss = self.loss_func(pred, self.yb)
+        loss = self.model.cal_Loss(self.xb)
         return pred, loss
 
     def model_forward(self):
@@ -194,7 +197,8 @@ class Learner(GetAttr):
         # forward
         pred = self.model_forward()
         # compute loss
-        loss = self.loss_func(pred, self.yb)
+        # loss = self.loss_func(pred, self.yb)
+        loss = self.model.cal_Loss(self.xb)
         return pred, loss                                     
 
 
