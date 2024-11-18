@@ -124,8 +124,8 @@ class TrackTrainingCB(Callback):
     def after_batch_train(self): self.accumulate()  # save batch recorder                
     def after_batch_valid(self): self.accumulate()
         
-    def accumulate(self ):
-        xb, yb = self.batch
+    def accumulate(self):
+        xb, yb,fb = self.batch
         bs = len(xb)                                
         self.batch_recorder['n_samples'].append(bs)
         # get batch loss 

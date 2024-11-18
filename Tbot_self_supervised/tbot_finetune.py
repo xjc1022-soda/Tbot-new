@@ -46,7 +46,7 @@ parser.add_argument('--d_v', type=int, default=128, help='d_v')
 parser.add_argument('--d_ff', type=int, default=512, help='Tranformer MLP dimension')
 parser.add_argument('--dropout', type=float, default=0.2, help='Transformer dropout')
 # Optimization args
-parser.add_argument('--n_epochs_finetune', type=int, default=20, help='number of finetuning epochs')
+parser.add_argument('--n_epochs_finetune', type=int, default=0, help='number of finetuning epochs')
 parser.add_argument('--lr', type=float, default=1e-4, help='learning rate')
 # Pretrained model name
 parser.add_argument('--pretrained_model', type=str, default=None, help='pretrained model name')

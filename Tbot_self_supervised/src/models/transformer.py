@@ -94,6 +94,7 @@ class Merger_pool(nn.Module):
         super(Merger_pool, self).__init__()
         self.pool = nn.AvgPool1d(2, padding=0)
     def forward(self, enc_outputs):
+        # print(enc_outputs.shape)
         return self.pool(enc_outputs.transpose(1, 2)).transpose(1, 2)
 
 

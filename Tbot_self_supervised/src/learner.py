@@ -172,13 +172,15 @@ class Learner(GetAttr):
 
     def train_step(self, batch):
         # get the inputs
-        self.xb, self.yb = batch
-        # print(self.xb.shape)
+        self.xb, self.yb, self.fb = batch
+        # print(f'xb shape is {self.xb.shape}')
+        # print(f'fb shape is {self.fb.shape}')
+
         # forward
         pred = self.model_forward()
         # compute loss
         # loss = self.loss_func(pred, self.yb)
-        loss = self.model.cal_Loss(self.xb)
+        loss = self.model.cal_Loss(self.xb, self.fb)
         return pred, loss
 
     def model_forward(self):
@@ -193,12 +195,12 @@ class Learner(GetAttr):
 
     def valid_step(self, batch):
         # get the inputs
-        self.xb, self.yb = batch
+        self.xb, self.yb , self.fb= batch
         # forward
         pred = self.model_forward()
         # compute loss
         # loss = self.loss_func(pred, self.yb)
-        loss = self.model.cal_Loss(self.xb)
+        loss = self.model.cal_Loss(self.xb, self.fb)
         return pred, loss                                     
 
 
@@ -207,7 +209,7 @@ class Learner(GetAttr):
            
     def predict_step(self, batch):
         # get the inputs
-        self.xb, self.yb = batch
+        self.xb, self.yb, self.fb = batch
         # forward
         pred = self.model_forward()
         return pred 
@@ -217,7 +219,7 @@ class Learner(GetAttr):
            
     def test_step(self, batch):
         # get the inputs
-        self.xb, self.yb = batch
+        self.xb, self.yb, self.fb = batch
         # forward
         pred = self.model_forward()
         return pred, self.yb
@@ -301,7 +303,7 @@ class Learner(GetAttr):
         return get_layer_output(inp, model=self.model, layers=layers, unwrap=unwrap)
     
 
-    def fine_tune(self, n_epochs, base_lr=None, freeze_epochs=1, pct_start=0.3):
+    def fine_tune(self, n_epochs, base_lr=None, freeze_epochs=10, pct_start=0.3):
         """
         fintune the pretrained model. First the entire model is freezed, only head is trained
         up to a freeze_epochs number. Then the model is unfreezed and the entire model is trained
@@ -337,6 +339,7 @@ class Learner(GetAttr):
         find the learning rate
         """
         n_epochs = num_iter//len(self.dls.train) + 1
+        print(n_epochs)
         # indicator of lr_finder method is applied
         self.run_finder = True
         # add LRFinderCB to callback list and will remove later

@@ -5,6 +5,7 @@ import os
 import torch
 from torch.utils.data import Dataset, DataLoader
 from sklearn.preprocessing import StandardScaler
+import torch.fft as fft
 
 from src.data.timefeatures import time_features
 import warnings
@@ -43,6 +44,9 @@ class Dataset_ETT_hour(Dataset):
         self.root_path = root_path
         self.data_path = data_path
         self.__read_data__()
+        self.data_f = np.array(fft.fft(torch.from_numpy(self.data_x)).abs())
+        # print(self.data_x.shape)
+        # print(self.data_f.shape)
 
     def __read_data__(self):
         self.scaler = StandardScaler()
@@ -91,11 +95,13 @@ class Dataset_ETT_hour(Dataset):
 
         seq_x = self.data_x[s_begin:s_end]
         seq_y = self.data_y[r_begin:r_end]
+        seq_f = self.data_f[s_begin:s_end]
         seq_x_mark = self.data_stamp[s_begin:s_end]
         seq_y_mark = self.data_stamp[r_begin:r_end]
+        seq_f_mark  = np.array(fft.fft(torch.from_numpy(self.data_stamp[s_begin:s_end])))
 
-        if self.use_time_features: return _torch(seq_x, seq_y, seq_x_mark, seq_y_mark)
-        else: return _torch(seq_x, seq_y)
+        if self.use_time_features: return _torch(seq_x, seq_y, seq_f, seq_x_mark, seq_y_mark, seq_f_mark)
+        else: return _torch(seq_x, seq_y, seq_f)
 
     def __len__(self):
         return len(self.data_x) - self.seq_len - self.pred_len + 1

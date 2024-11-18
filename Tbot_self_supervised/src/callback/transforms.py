@@ -21,7 +21,8 @@ class RevInCB(Callback):
         self.eps = eps
         self.affine = affine
         self.denorm = denorm
-        self.revin = RevIN(num_features, eps, affine)
+        self.revin_x = RevIN(num_features, eps, affine)
+        self.revin_f = RevIN(num_features, eps, affine)
     
 
     def before_forward(self): self.revin_norm()
@@ -29,8 +30,10 @@ class RevInCB(Callback):
         if self.denorm: self.revin_denorm() 
         
     def revin_norm(self):
-        xb_revin = self.revin(self.xb, 'norm')      # xb_revin: [bs x seq_len x nvars]
+        xb_revin = self.revin_x(self.xb, 'norm')      # xb_revin: [bs x seq_len x nvars]
+        fb_revin = self.revin_f(self.fb, 'norm')      # fb_revin: [bs x seq_len x nvars]
         self.learner.xb = xb_revin
+        self.learner.fb = fb_revin
 
     def revin_denorm(self):
         pred = self.revin(self.pred, 'denorm')      # pred: [bs x target_window x nvars]

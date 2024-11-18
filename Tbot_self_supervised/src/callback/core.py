@@ -45,9 +45,9 @@ class SetupLearnerCB(Callback):
 
     def _to_device(self):
         batch = to_device(self.batch, self.device)        
-        if self.n_inp > 1: xb, yb = batch
-        else: xb, yb = batch, None        
-        self.learner.batch = xb, yb
+        if self.n_inp > 1: xb, yb, fb = batch
+        else: xb, yb, fb = batch, None, None        
+        self.learner.batch = xb, yb, fb
         
     def before_fit(self): 
         "Set model to cuda before training"                
