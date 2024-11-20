@@ -210,10 +210,14 @@ class Tbot(nn.Module):
 
 
 
-    def ema_update(self, alpha=0.99):
+    def ema_update(self, ema_alpha=0.99):
         with torch.no_grad():
-            for param_s, param_t in zip(self.student.parameters(), self.teacher.parameters()):
-                param_t.data = alpha * param_t.data + (1 - alpha) * param_s.data
+            for param_s, param_t in zip(self.student_net_t.parameters(), self.teacher_net_t.parameters()):
+                param_t.data = ema_alpha * param_t.data + (1 - ema_alpha) * param_s.data
+        with torch.no_grad():
+            for param_s, param_t in zip(self.student_net_f.parameters(), self.teacher_net_f.parameters()):
+                param_t.data = ema_alpha * param_t.data + (1 - ema_alpha) * param_s.data
+        pass
 
     # def fit(self, train_data, n_epochs=None, n_iters=None, verbose=False):
     #     ''' Training the TiBot model.

@@ -169,6 +169,7 @@ class Learner(GetAttr):
         self.loss.backward()
         # update weights
         self.opt.step() 
+        self.model.ema_update()
 
     def train_step(self, batch):
         # get the inputs
