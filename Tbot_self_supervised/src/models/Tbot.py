@@ -11,13 +11,13 @@ from .transformer import MultiHeadAttention
 from .transformer import Merger_pool
 from .heads import PretrainHead, PredictionHead
 import torch.fft as fft
-from augmentations import DataTransform_TD_bank
+from .augmentations import DataTransform_TD_bank, plot_ts
 
 class augmentations(object):
     def __init__(self):
         self.jitter_scale_ratio = 1.1
         self.jitter_ratio = 0.8
-        self.max_seg = 8
+        self.max_seg = 5
 
 def visible_mask_div(x, mask_ratio):
     """
@@ -123,7 +123,7 @@ class Tbot(nn.Module):
         self.after_epoch_callback = after_epoch_callback
         self.n_epochs = 0
 
-        self.optimizer = torch.optim.Adam([*self.student_net.parameters(), self.t_query], lr=self.lr)
+        self.optimizer = torch.optim.Adam([*self.student_net_t.parameters(), *self.student_net_f.parameters(), self.t_query, self.f_query], lr=self.lr)
     
     def forward(self, z):
         """
@@ -142,8 +142,8 @@ class Tbot(nn.Module):
     def reconstruct(self, x, f):
         x_vis, x_mask = visible_mask_div(x, self.mask_ratio)
         f_vis, f_mask = visible_mask_div(f, self.mask_ratio)
-        outputs = self.student_net(x_vis)
-        outputs_f = self.student_net(f_vis)
+        outputs = self.student_net_t(x_vis)
+        outputs_f = self.student_net_f(f_vis)
         _, pred_mask_1 = self.decoder_t(self.t_query, outputs)
         _, pred_mask_2 = self.decoder_t(self.t_query, outputs_f)
         _, pred_mask_f_1 = self.decoder_f(self.f_query, outputs)
@@ -162,9 +162,15 @@ class Tbot(nn.Module):
     
     def distill(self, x, f):
         config = augmentations()
-        x_1, x_2 = x, DataTransform_TD_bank(x, config)
-        f_1 = fft.fft(x_1)
-        f_2 = fft.fft(x_2)
+        x_1, x_2 = x, torch.from_numpy(DataTransform_TD_bank(x, config)).to(self.device)
+        x_1 = x_1.to(torch.float32)
+        x_2 = x_2.to(torch.float32)
+        # print(x_1.dtype, x_2.dtype)
+        plot_ts(x_1, 'original.png')
+        plot_ts(x_2, 'augmented.png')
+        f_1 = fft.fft(x_1).abs().to(torch.float32)
+        f_2 = fft.fft(x_2).abs().to(torch.float32)
+
         t_1_out = self.student_net_t(x_1)
         f_1_out = self.student_net_f(f_1)
         t_2_out = self.student_net_t(x_2)
@@ -186,7 +192,7 @@ class Tbot(nn.Module):
         loss = self.alpha * d_loss + self.beta * r_loss
         return loss
     
-    
+
         # x_vis, x_mask = visible_mask_div(x, self.mask_ratio)
         # outputs = self.student_net(x_vis)
         # z_list, pred_list = self.decoder(self.t_query, outputs)

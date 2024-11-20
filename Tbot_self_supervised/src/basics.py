@@ -57,7 +57,7 @@ def default_device(use_cuda=True):
     return torch.device(torch.cuda.current_device()) if use_cuda else torch.device('cpu')
 
 
-def get_available_cuda(usage=10):
+def get_available_cuda(usage=5):
     if not torch.cuda.is_available(): return
     # collect available cuda devices, only collect devices that has less that 'usage' percent 
     device_ids = []

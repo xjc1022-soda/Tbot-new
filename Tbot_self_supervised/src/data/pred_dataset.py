@@ -98,7 +98,7 @@ class Dataset_ETT_hour(Dataset):
         seq_f = self.data_f[s_begin:s_end]
         seq_x_mark = self.data_stamp[s_begin:s_end]
         seq_y_mark = self.data_stamp[r_begin:r_end]
-        seq_f_mark  = np.array(fft.fft(torch.from_numpy(self.data_stamp[s_begin:s_end])))
+        seq_f_mark  = np.array(fft.fft(torch.from_numpy(self.data_stamp[s_begin:s_end])).abs())
 
         if self.use_time_features: return _torch(seq_x, seq_y, seq_f, seq_x_mark, seq_y_mark, seq_f_mark)
         else: return _torch(seq_x, seq_y, seq_f)

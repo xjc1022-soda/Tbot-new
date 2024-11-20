@@ -1,5 +1,7 @@
 import numpy as np
 import torch
+import random
+import matplotlib.pyplot as plt
 
 def one_hot_encoding(X):
     X = [int(x) for x in X]
@@ -36,9 +38,11 @@ def DataTransform_TD(sample, config):
 def DataTransform_TD_bank(sample, config):
     """Augmentation bank that includes four augmentations and randomly select one as the positive sample.
     You may use this one the replace the above DataTransform_TD function."""
-    aug_1 = jitter(sample, config.augmentation.jitter_ratio)
-    aug_2 = scaling(sample, config.augmentation.jitter_scale_ratio)
-    aug_3 = permutation(sample, max_segments=config.augmentation.max_seg)
+    bs, num_patch, n_vars, patch_len = sample.shape
+    sample = sample.reshape(bs, num_patch * patch_len, n_vars)
+    aug_1 = jitter(sample, config.jitter_ratio)
+    aug_2 = scaling(sample, config.jitter_scale_ratio)
+    aug_3 = permutation(sample, max_segments=config.max_seg)
     aug_4 = masking(sample, keepratio=0.9)
 
     li = np.random.randint(0, 4, size=[sample.shape[0]])
@@ -48,6 +52,9 @@ def DataTransform_TD_bank(sample, config):
     aug_3 = aug_3 * li_onehot[:, 0][:, None, None]
     aug_4 = aug_4 * li_onehot[:, 0][:, None, None]
     aug_T = aug_1 + aug_2 + aug_3 + aug_4
+    aug_T = aug_T.reshape(bs, num_patch, n_vars, patch_len)
+    # print(li_onehot)
+    # print(f'aug_T shape is {aug_T.shape}')
     return aug_T
 
 def DataTransform_FD(sample, config):
@@ -95,23 +102,27 @@ def masking(x, keepratio=0.9, mask= 'binomial'):
 
     # mask &= nan_mask
     x[~mask_id] = 0
-    return x
+    return np.array(x.cpu())
 
 def jitter(x, sigma=0.8):
+    x = np.array(x.cpu())
     # https://arxiv.org/pdf/1706.00527.pdf
     return x + np.random.normal(loc=0., scale=sigma, size=x.shape)
 
 
 def scaling(x, sigma=1.1):
     # https://arxiv.org/pdf/1706.00527.pdf
+    x = np.array(x.cpu())
     factor = np.random.normal(loc=2., scale=sigma, size=(x.shape[0], x.shape[2]))
     ai = []
     for i in range(x.shape[1]):
         xi = x[:, i, :]
         ai.append(np.multiply(xi, factor[:, :])[:, np.newaxis, :])
-    return np.concatenate((ai), axis=1)
+    x = np.concatenate((ai), axis=1)
+    return x
 
-def permutation(x, max_segments=5, seg_mode="random"):
+def permutation(x, max_segments=4, seg_mode="random"):
+    x = np.array(x.cpu())
     orig_steps = np.arange(x.shape[2])
 
     num_segs = np.random.randint(1, max_segments, size=(x.shape[0]))
@@ -125,9 +136,20 @@ def permutation(x, max_segments=5, seg_mode="random"):
                 splits = np.split(orig_steps, split_points)
             else:
                 splits = np.array_split(orig_steps, num_segs[i])
-            warp = np.concatenate(np.random.permutation(splits)).ravel()
+            random.shuffle(splits)
+            warp = np.concatenate(splits).ravel()
             ret[i] = pat[0,warp]
         else:
             ret[i] = pat
-    return torch.from_numpy(ret)
+    return ret
 
+
+def plot_ts(ts, name):
+    ts = ts.cpu().detach().numpy()
+    bs, num_patch, n_vars, patch_len = ts.shape
+    ts = ts.reshape(bs, num_patch * patch_len, n_vars)
+    y = ts[0,:,:]
+    plt.plot(y[:,0])
+    plt.show()
+    plt.savefig(name)
+    return

@@ -121,6 +121,7 @@ class TbotEncoder(nn.Module):
         output[0]: [bs x nvars x d_model x num_patch]
         '''
         bs, num_patch, n_vars, patch_len = x.shape
+        # print(x.shape)
         if not self.shared_embedding:
             x_out = []
             for i in range(n_vars): 
@@ -128,6 +129,7 @@ class TbotEncoder(nn.Module):
                 x_out.append(z)
             x = torch.stack(x_out, dim=2)
         else:
+            # print(x.dtype)
             x = self.value_embedding(x)                 # x: [bs x num_patch x n_vars x d_model]
         x = x.transpose(1,2)
         # print(f'x_shape is {x.shape}')                            # x: [bs x  n_vars x num_patch x d_model]
